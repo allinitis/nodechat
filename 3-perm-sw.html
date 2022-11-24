@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Push Notification</title>
+</head>
+<body>
+  <script>
+    // (B) REGISTER SERVICE WORKER
+    async function regWorker () {
+      // (B1) YOUR PUBLIC KEY - CHANGE TO YOUR OWN!
+      const publicKey = "BIFI6E9ATlIJdXHSVh4qI0KT2BnsnQ203BwlGQoc96ADBE78qnr9r0HhYZuqrZ9Ju-f13wjGvV5xUUE5rjkBG9A";
+
+      // (B2) REGISTER SERVICE WORKER
+      const reg = await navigator.serviceWorker.register("4-sw.js", { scope: "/push/" });
+
+      
+      console.log(reg, 'reg')
+      // (B3) SUBSCRIBE TO PUSH SERVER
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: publicKey
+      });
+
+      // (B4) TEST PUSH
+      await fetch("/", {
+        method: "POST",
+        body: JSON.stringify(sub),
+        headers: { "content-type": "application/json" }
+      });
+    }
+
+    // (A) OBTAIN USER PERMISSION
+    // (A1) ASK FOR PERMISSION
+    if (Notification.permission === "default") {
+      Notification.requestPermission().then((perm) => {
+        if (Notification.permission === "granted") {
+          regWorker().catch((err) => { console.error(err); } );
+        }
+        else { alert("Please allow notifications."); }
+      });
+    }
+
+    // (A2) GRANTED
+    else if (Notification.permission === "granted") {
+      regWorker().catch((err) => { console.error(err); } );
+    }
+
+    // (A3) DENIED
+    else { alert("Please allow notifications."); }
+  </script>
+</body>
+</html>
